@@ -17,6 +17,7 @@
     <module>identity-ldap</module>
     <module>connect-plugin</module>
     <module>spin-plugin</module>
+    <module>external-access-plugin</module>
   </modules>
 
   <dependencyManagement>
