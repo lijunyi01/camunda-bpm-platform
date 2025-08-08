@@ -3,13 +3,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <!-- Removed parent to avoid dependency management issues -->
-    <!-- <parent>
-        <groupId>org.camunda.bpm</groupId>
-        <artifactId>camunda-engine-plugins</artifactId>
-        <version>7.23.0</version>
-    </parent> -->
-    
     <artifactId>external-access-plugin</artifactId>
     <groupId>org.camunda.bpm.identity</groupId>
     <version>1.0.0</version>

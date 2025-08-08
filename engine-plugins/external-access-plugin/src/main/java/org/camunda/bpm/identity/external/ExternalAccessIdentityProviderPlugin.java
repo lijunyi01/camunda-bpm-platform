@@ -13,8 +13,11 @@ import org.camunda.bpm.engine.impl.cfg.ProcessEngineConfigurationImpl;
  */
 public class ExternalAccessIdentityProviderPlugin extends AbstractProcessEnginePlugin {
 
+    private static final ExternalAccessPluginLogger LOG = ExternalAccessPluginLogger.LOGGER;
+
     @Override
     public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
+        LOG.writeLog("ExternalAccessIdentityProviderPlugin preInit");
         // 注册自定义身份提供者会话工厂
         processEngineConfiguration.setIdentityProviderSessionFactory(new ExternalAccessIdentityProviderSessionFactory());
     }
@@ -31,6 +34,7 @@ public class ExternalAccessIdentityProviderPlugin extends AbstractProcessEngineP
 
         @Override
         public Session openSession() {
+            LOG.writeLog("ExternalAccessIdentityProviderSessionFactory openSession");
             return new ExternalAccessIdentityProviderSession();
         }
     }
