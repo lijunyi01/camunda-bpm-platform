@@ -82,8 +82,41 @@ boolean isValid = processEngine.getIdentityService()
 3. **权限管理**: 添加用户组关系管理
 4. **缓存机制**: 添加用户数据缓存以提高性能
 
+## BPMN 表达式支持
+
+### ExternalUserQueryService
+
+插件提供了 `ExternalUserQueryService` 服务，可以在 BPMN 表达式中使用：
+
+```xml
+<!-- 在服务任务中使用 -->
+<serviceTask id="getUsersTask" 
+             camunda:expression="${externalUserQuery.getCandidateUsersForGroup('guests', execution)}" />
+
+<!-- 在监听器中使用 -->
+<camunda:executionListener event="start" 
+                           expression="${externalUserQuery.getCandidateUsersForGroup('external-users', execution)}" />
+```
+
+### 可用方法
+
+- `getCandidateUsersForGroup(String groupId, DelegateExecution execution)`: 获取指定组的候选用户列表
+
+### 实现原理
+
+插件在 `preInit()` 阶段将 `ExternalUserQueryService` 实例注册到 ProcessEngine 的 beans 映射中，使其可以在 BPMN 表达式中被识别和调用。
+
+### 故障排除
+
+如果遇到 "Cannot resolve identifier 'externalUserQuery'" 错误：
+
+1. 确保插件已正确加载（检查 `META-INF/services/org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin` 文件）
+2. 确保 `ExternalUserQueryService` 类没有使用 Spring 注解（如 `@Component`）
+3. 检查插件的 `preInit()` 方法是否正确执行
+
 ## 注意事项
 
 - 这是一个只读身份提供者，不支持用户和组的创建、更新、删除操作
 - 密码验证采用简单的明文比较，生产环境中应使用加密验证
 - 预定义的用户和组数据仅用于测试，实际使用时应连接真实的数据源
+- `ExternalUserQueryService` 通过插件机制注册，不依赖 Spring 容器
