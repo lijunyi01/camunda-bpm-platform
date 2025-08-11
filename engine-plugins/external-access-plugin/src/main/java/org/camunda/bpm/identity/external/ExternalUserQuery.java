@@ -5,6 +5,9 @@ import org.camunda.bpm.engine.identity.UserQuery;
 import org.camunda.bpm.engine.impl.Page;
 
 import java.util.List;
+import java.util.Set;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -15,14 +18,27 @@ public class ExternalUserQuery implements UserQuery {
     private static final ExternalAccessPluginLogger LOG = ExternalAccessPluginLogger.LOGGER;
 
     private final List<User> users;
+    private final ExternalAccessIdentityProviderSession session;
     private String userId;
     private String firstName;
     private String lastName;
     private String email;
     private String groupId;
+    private Map<String, Object> processContext = new HashMap<>();
 
-    public ExternalUserQuery(List<User> users) {
+    public ExternalUserQuery(List<User> users, ExternalAccessIdentityProviderSession session) {
         this.users = users;
+        this.session = session;
+    }
+    
+    /**
+     * 设置流程上下文信息
+     * @param processContext 流程上下文信息
+     */
+    public void setProcessContext(Map<String, Object> processContext) {
+        if (processContext != null) {
+            this.processContext = processContext;
+        }
     }
 
     @Override
@@ -156,7 +172,23 @@ public class ExternalUserQuery implements UserQuery {
             .filter(user -> firstName == null || user.getFirstName().contains(firstName))
             .filter(user -> lastName == null || user.getLastName().contains(lastName))
             .filter(user -> email == null || user.getEmail().contains(email))
+            .filter(user -> groupId == null || isUserMemberOfGroup(user.getId(), groupId))
             .collect(Collectors.toList());
+    }
+
+    private boolean isUserMemberOfGroup(String userId, String groupId) {
+        if (session != null) {
+            // 如果有流程上下文信息，使用带上下文的方法
+            if (processContext != null && !processContext.isEmpty()) {
+                Set<String> userIds = session.findUserIdsByGroupId(groupId, processContext);
+                return userIds != null && userIds.contains(userId);
+            } else {
+                // 否则使用默认方法
+                Set<String> userIds = session.findUserIdsByGroupId(groupId);
+                return userIds != null && userIds.contains(userId);
+            }
+        }
+        return false;
     }
 
     @Override
