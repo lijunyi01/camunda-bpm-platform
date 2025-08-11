@@ -3,16 +3,8 @@ package org.camunda.bpm.identity.external;
 import org.camunda.bpm.engine.identity.*;
 import org.camunda.bpm.engine.impl.identity.ReadOnlyIdentityProvider;
 import org.camunda.bpm.engine.impl.interceptor.Session;
-import org.camunda.bpm.engine.impl.context.Context;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
-import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.GroupEntity;
-import org.camunda.bpm.engine.impl.persistence.entity.UserEntity;
 import org.camunda.bpm.engine.variable.VariableMap;
-import org.camunda.bpm.engine.impl.context.BpmnExecutionContext;
-import org.camunda.bpm.engine.ProcessEngine;
-import org.camunda.bpm.engine.runtime.ProcessInstance;
-import org.camunda.bpm.engine.RuntimeService;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -64,22 +56,6 @@ public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityPr
         LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery");
         // 返回null表示不支持原生查询
         // return null;
-        // 获取全局上下文
-        CommandContext commandContext = Context.getCommandContext();
-        LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery:" + commandContext);
-
-        ProcessEngine processEngine = Context.getProcessEngineConfiguration().getProcessEngine();
-        RuntimeService runtimeService = processEngine.getRuntimeService();
-
-        // ExecutionEntity execution = Context.getExecutionContext().getExecution();
-        // LOG.writeLog("execution:" + execution);
-        // String processInstanceId = execution.getProcessInstanceId();
-        // LOG.writeLog("processInstanceId:" + processInstanceId);
-        if (commandContext != null) {
-            // 获取流程上下文信息
-            Map<String, Object> contextInfo = getCurrentProcessContextFromCommandContext(commandContext);
-            LOG.writeLog("contextInfo:" + contextInfo);
-        }
         return new ExternalUserQuery(EXTERNAL_USERS);
     }
 
@@ -171,54 +147,5 @@ public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityPr
         group.setName(name);
         group.setType(type);
         return group;
-    }
-
-    /**
-     * 从CommandContext中安全地获取流程上下文信息
-     */
-    private Map<String, Object> getCurrentProcessContextFromCommandContext(CommandContext commandContext) {
-        Map<String, Object> contextInfo = new HashMap<String, Object>();
-        
-        try {
-            // 获取当前认证用户ID
-            String authenticatedUserId = commandContext.getAuthenticatedUserId();
-            contextInfo.put("authenticatedUserId", authenticatedUserId);
-            contextInfo.put("commandContextAvailable", true);
-
-            // 尝试从CommandContext的缓存中获取ExecutionEntity
-            List<ExecutionEntity> cachedExecutions = commandContext.getDbEntityManager().getCachedEntitiesByType(ExecutionEntity.class);
-            ExecutionEntity execution = null;
-            
-            // 查找当前活跃的执行实体
-            for (ExecutionEntity executionEntity : cachedExecutions) {
-                if (executionEntity != null && !executionEntity.isEnded()) {
-                    execution = executionEntity;
-                    break;
-                }
-            }
-            
-            if (execution != null) {
-                contextInfo.put("executionId", execution.getId());
-                contextInfo.put("processInstanceId", execution.getProcessInstanceId());
-                contextInfo.put("processDefinitionId", execution.getProcessDefinitionId());
-                contextInfo.put("processDefinitionKey", execution.getProcessDefinitionKey());
-                
-                // 获取流程变量
-                try {
-                    VariableMap processVariables = execution.getVariables();
-                    contextInfo.put("processVariables", processVariables);
-                } catch (Exception e) {
-                    contextInfo.put("variableError", "Failed to get process variables: " + e.getMessage());
-                }
-            } else {
-                contextInfo.put("executionNotFound", "No active execution found in cache");
-            }
-            
-        } catch (Exception e) {
-            // 如果获取流程上下文失败，记录错误但不影响主要功能
-            contextInfo.put("error", "Failed to get process context: " + e.getMessage());
-        }
-        
-        return contextInfo;
     }
 }

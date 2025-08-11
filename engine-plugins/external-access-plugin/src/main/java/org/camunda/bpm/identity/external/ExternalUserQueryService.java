@@ -2,6 +2,7 @@ package org.camunda.bpm.identity.external;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Map;
 import org.camunda.bpm.engine.delegate.DelegateExecution;
 
 /**
@@ -32,9 +33,16 @@ public class ExternalUserQueryService {
         // 查看所有的流程变量
         LOG.writeLog("getCandidateUsersForGroup, all variables: " + execution.getVariables());
 
+        // 提取variables里的值，放到map里
+        Map<String, Object> variableMap = execution.getVariables();
+        LOG.writeLog("getCandidateUsersForGroup, variables: " + variableMap);
+
         // 获取流程变量
         String amount = (String) execution.getVariable("amount");
         LOG.writeLog("getCandidateUsersForGroup, amount: " + amount);
+
+        // 调用外部接口，获取groupName对应的人员
+        // List<String> users = externalAccessPlugin.findCandidateUsers(groupName, departmentId);
 
         // 然后调用你插件中获取候选人的核心逻辑
         // 假设你有一个方法来完成这个任务
