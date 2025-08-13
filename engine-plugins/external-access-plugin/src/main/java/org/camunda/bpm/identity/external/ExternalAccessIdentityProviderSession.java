@@ -4,13 +4,9 @@ import org.camunda.bpm.engine.identity.*;
 import org.camunda.bpm.engine.impl.identity.ReadOnlyIdentityProvider;
 import org.camunda.bpm.engine.impl.interceptor.Session;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
-import org.camunda.bpm.engine.impl.context.Context;
-import org.camunda.bpm.engine.impl.context.BpmnExecutionContext;
-import org.camunda.bpm.engine.impl.persistence.entity.ExecutionEntity;
 import org.camunda.bpm.engine.variable.VariableMap;
 
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 
@@ -38,21 +34,16 @@ public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityPr
     @Override
     public UserQuery createUserQuery() {
         LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery");
-        return new ExternalUserQuery(apiClient.getAllUsers(), this);
+        // 返回null表示不支持原生查询
+        // return null;
+        return new ExternalUserQuery(EXTERNAL_USERS);
     }
 
     @Override
     public UserQuery createUserQuery(CommandContext commandContext) {
-        LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery:commandContext");
-        
-        // 从CommandContext中获取流程上下文信息
-        Map<String, Object> contextInfo = getCurrentProcessContextFromCommandContext(commandContext);
-        
-        // 创建带有上下文信息的UserQuery
-        ExternalUserQuery userQuery = new ExternalUserQuery(apiClient.getAllUsers(), this);
-        userQuery.setProcessContext(contextInfo);
-        
-        return userQuery;
+        // LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery:commandContext");
+        LOG.writeLog("ExternalAccessIdentityProviderSession createUserQuery:commandContext:" + commandContext);
+        return new ExternalUserQuery(EXTERNAL_USERS);
     }
 
     @Override

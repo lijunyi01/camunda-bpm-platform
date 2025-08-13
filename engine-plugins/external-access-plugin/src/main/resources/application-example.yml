@@ -1,0 +1,43 @@
+# External Access Plugin Configuration Example
+# Copy this file to your application's resources directory and rename to application.yml
+# or merge these properties into your existing application.yml
+
+camunda:
+  bpm:
+    external-access:
+      enabled: true
+      api:
+        # Base URL of the external REST API
+        base-url: "https://api.example.com"
+        
+        # Connection timeout in milliseconds (default: 5000)
+        connect-timeout: 5000
+        
+        # Read timeout in milliseconds (default: 10000)
+        read-timeout: 10000
+        
+        # Authentication token for API calls
+        auth-token: "your-api-token-here"
+        
+        # API endpoints for different operations
+        endpoints:
+          # User authentication endpoint
+          auth: "/auth/validate"
+          
+          # User information endpoint
+          user: "/users/{userId}"
+          
+          # Users search endpoint
+          users: "/users/search"
+          
+          # Group information endpoint
+          group: "/groups/{groupId}"
+          
+          # Groups search endpoint
+          groups: "/groups/search"
+
+# Optional: Logging configuration for debugging
+logging:
+  level:
+    org.camunda.bpm.identity.external: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG

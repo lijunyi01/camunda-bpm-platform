@@ -267,39 +267,46 @@ User user = identityService.createUserQuery()
 
 ## 部署说明
 
-1. 编译插件：`mvn clean compile`
-2. 打包插件：`mvn package`
-3. 将生成的 JAR 文件放入 Camunda 的 `lib` 目录
-4. 在 `bpm-platform.xml` 中配置插件
-5. 配置外部 API 的系统属性
-6. 启动 Camunda 引擎
+1. **数据源集成**: 修改`ExternalAccessIdentityProviderSession`类，从数据库或外部API获取用户数据
+2. **密码验证**: 实现更复杂的密码验证逻辑
+3. **权限管理**: 添加用户组关系管理
+4. **缓存机制**: 添加用户数据缓存以提高性能
+
+## BPMN 表达式支持
+
+### ExternalUserQueryService
+
+插件提供了 `ExternalUserQueryService` 服务，可以在 BPMN 表达式中使用：
+
+```xml
+<!-- 在服务任务中使用 -->
+<serviceTask id="getUsersTask" 
+             camunda:expression="${externalUserQuery.getCandidateUsersForGroup('guests', execution)}" />
+
+<!-- 在监听器中使用 -->
+<camunda:executionListener event="start" 
+                           expression="${externalUserQuery.getCandidateUsersForGroup('external-users', execution)}" />
+```
+
+### 可用方法
+
+- `getCandidateUsersForGroup(String groupId, DelegateExecution execution)`: 获取指定组的候选用户列表
+
+### 实现原理
+
+插件在 `preInit()` 阶段将 `ExternalUserQueryService` 实例注册到 ProcessEngine 的 beans 映射中，使其可以在 BPMN 表达式中被识别和调用。
+
+### 故障排除
+
+如果遇到 "Cannot resolve identifier 'externalUserQuery'" 错误：
+
+1. 确保插件已正确加载（检查 `META-INF/services/org.camunda.bpm.engine.impl.cfg.ProcessEnginePlugin` 文件）
+2. 确保 `ExternalUserQueryService` 类没有使用 Spring 注解（如 `@Component`）
+3. 检查插件的 `preInit()` 方法是否正确执行
 
 ## 注意事项
 
-1. **网络连接**: 确保 Camunda 服务器能够访问外部 API
-2. **超时设置**: 根据网络环境调整连接和读取超时时间
-3. **错误处理**: 监控日志以确保 HTTP 调用正常工作
-4. **性能考虑**: 外部 API 的响应时间会影响 Camunda 的性能
-5. **安全性**: 确保外部 API 的安全性和认证机制
-
-## 故障排除
-
-### 常见问题
-
-1. **连接超时**: 检查网络连接和 API 服务器状态
-2. **认证失败**: 确认外部 API 的认证机制
-3. **数据格式**: 确保外部 API 返回正确的 JSON 格式
-4. **日志查看**: 检查 Camunda 日志中的 HTTP 调用记录
-
-### 调试建议
-
-1. 启用详细日志记录
-2. 使用网络抓包工具检查 HTTP 请求
-3. 测试外部 API 的可用性
-4. 验证系统属性配置
-
----
-
-**版本**: 1.0.0  
-**最后更新**: 2025-08-10  
-**兼容性**: Camunda BPM 7.x
+- 这是一个只读身份提供者，不支持用户和组的创建、更新、删除操作
+- 密码验证采用简单的明文比较，生产环境中应使用加密验证
+- 预定义的用户和组数据仅用于测试，实际使用时应连接真实的数据源
+- `ExternalUserQueryService` 通过插件机制注册，不依赖 Spring 容器
