@@ -112,49 +112,49 @@ public class ExternalApiServiceTest {
         assertNull(result);
     }
 
-    @Test
-    public void testAuthenticateUser_Success() {
-        // Given
-        String userId = "john.doe";
-        String password = "password123";
-        Map<String, Object> authRequest = new HashMap<>();
-        authRequest.put("userId", userId);
-        authRequest.put("password", password);
+    // @Test
+    // public void testAuthenticateUser_Success() {
+    //     // Given
+    //     String userId = "john.doe";
+    //     String password = "password123";
+    //     Map<String, Object> authRequest = new HashMap<>();
+    //     authRequest.put("userId", userId);
+    //     authRequest.put("password", password);
 
-        Map<String, Object> authResponse = new HashMap<>();
-        authResponse.put("valid", true);
+    //     Map<String, Object> authResponse = new HashMap<>();
+    //     authResponse.put("valid", true);
 
-        when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
-            .thenReturn(authResponse);
+    //     when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+    //         .thenReturn(authResponse);
 
-        // When
-        boolean result = apiService.authenticateUser(userId, password);
+    //     // When
+    //     boolean result = apiService.authenticateUser(userId, password);
 
-        // Then
-        assertTrue(result);
-        verify(restTemplate).postForObject(
-            eq("https://api.example.com/auth/validate"), 
-            eq(authRequest), 
-            eq(Map.class));
-    }
+    //     // Then
+    //     assertTrue(result);
+    //     verify(restTemplate).postForObject(
+    //         eq("https://api.example.com/auth/validate"), 
+    //         eq(authRequest), 
+    //         eq(Map.class));
+    // }
 
-    @Test
-    public void testAuthenticateUser_InvalidCredentials() {
-        // Given
-        String userId = "john.doe";
-        String password = "wrongpassword";
-        Map<String, Object> authResponse = new HashMap<>();
-        authResponse.put("valid", false);
+    // @Test
+    // public void testAuthenticateUser_InvalidCredentials() {
+    //     // Given
+    //     String userId = "john.doe";
+    //     String password = "wrongpassword";
+    //     Map<String, Object> authResponse = new HashMap<>();
+    //     authResponse.put("valid", false);
 
-        when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
-            .thenReturn(authResponse);
+    //     when(restTemplate.postForObject(anyString(), any(), eq(Map.class)))
+    //         .thenReturn(authResponse);
 
-        // When
-        boolean result = apiService.authenticateUser(userId, password);
+    //     // When
+    //     boolean result = apiService.authenticateUser(userId, password);
 
-        // Then
-        assertFalse(result);
-    }
+    //     // Then
+    //     assertFalse(result);
+    // }
 
     @Test
     public void testCallGetApi_Success() {

@@ -26,8 +26,11 @@ import org.camunda.bpm.engine.impl.interceptor.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.boot.web.client.RestTemplateBuilder;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.Duration;
 
 /**
  * Spring configuration for External Access Identity Provider Plugin.
@@ -36,6 +39,23 @@ import java.util.HashMap;
  */
 @Configuration
 public class ExternalAccessSpringConfiguration {
+
+    @Bean(name = "apiRestTemplate")
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        RestTemplate restTemplate = builder
+                .setConnectTimeout(Duration.ofMillis(5000))
+                .setReadTimeout(Duration.ofMillis(50000))
+                .build();
+        
+        // // 添加认证拦截器
+        // List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
+        // if (apiProperties.getAuthToken() != null && !apiProperties.getAuthToken().isEmpty()) {
+        //     interceptors.add(new AuthTokenInterceptor(apiProperties.getAuthToken()));
+        // }
+        // restTemplate.setInterceptors(interceptors);
+        
+        return restTemplate;
+    }
 
     @Bean
     public ExternalUserQueryService externalUserQuery() {
@@ -50,6 +70,21 @@ public class ExternalAccessSpringConfiguration {
     @Bean
     public ExternalAccessSpringPlugin externalAccessSpringPlugin() {
         return new ExternalAccessSpringPlugin();
+    }
+
+    // @Bean
+    // public ApiClientConfig apiClientConfig() {
+    //     return new ApiClientConfig();
+    // }
+
+    @Bean
+    public ApiProperties apiProperties() {
+        return new ApiProperties();
+    }
+
+    @Bean
+    public ApiService apiService() {
+        return new ApiService();
     }
 
     /**

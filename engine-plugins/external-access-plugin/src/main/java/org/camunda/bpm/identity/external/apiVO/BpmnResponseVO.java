@@ -1,64 +1,31 @@
 package org.camunda.bpm.identity.external.apiVO;
 
-public class UsersByGroupQueryVO {
-    private String groupName;
-    // 发起人员id
-    private String startPeopleId;
-    // 流程定义id
-    private String processDefinitionId;
-    // 流程实例id
-    private String processInstanceId;
-    // 流程实例任务节点id
-    private String taskId;
+public class BpmnResponseVO<T> {
+    private Integer code;
+    private String msg;
+    private T result;
 
-    @Override
-    public String toString() {
-        return "UsersByGroupQueryVO{" +
-                "groupName='" + groupName + '\'' +
-                ", startPeopleId='" + startPeopleId + '\'' +
-                ", processDefinitionId='" + processDefinitionId + '\'' +
-                ", processInstanceId='" + processInstanceId + '\'' +
-                ", taskId='" + taskId + '\'' +
-                '}';
+    public Integer getCode() {
+        return code;
     }
 
-    public String getTaskId() {
-        return taskId;
+    public void setCode(Integer code) {
+        this.code = code;
     }
 
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
+    public String getMsg() {
+        return msg;
     }
 
-    public String getProcessDefinitionId() {
-        return processDefinitionId;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
-    public void setProcessDefinitionId(String processDefinitionId) {
-        this.processDefinitionId = processDefinitionId;
+    public T getResult() {
+        return result;
     }
 
-    public String getProcessInstanceId() {
-        return processInstanceId;
-    }
-
-    public void setProcessInstanceId(String processInstanceId) {
-        this.processInstanceId = processInstanceId;
-    }
-
-    public String getStartPeopleId() {
-        return startPeopleId;
-    }
-
-    public void setStartPeopleId(String startPeopleId) {
-        this.startPeopleId = startPeopleId;
-    }
-
-    public String getGroupName() {
-        return groupName;
-    }
-
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
+    public void setResult(T result) {
+        this.result = result;
     }
 }

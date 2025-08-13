@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 /**
  * 外部API配置属性
  */
-@Component
+// @Component
 @ConfigurationProperties(prefix = "camunda.bpm.external-access.api")
 public class ApiProperties {
     
     /**
      * 外部API基础URL
      */
-    private String baseUrl = "http://localhost:8080";
+    private String baseUrl = "http://bpmn-service-bpmn-service";
     
     /**
      * 连接超时时间（毫秒）

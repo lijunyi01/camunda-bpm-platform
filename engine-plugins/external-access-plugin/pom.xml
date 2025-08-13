@@ -32,13 +32,13 @@
             <version>3.4.4</version>
             <scope>provided</scope>
         </dependency>
-
-        <!-- <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
-            <version>6.2.4</version>
+        
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>3.4.4</version>
             <scope>provided</scope>
-        </dependency> -->
+        </dependency>
         
         <dependency>
             <groupId>org.camunda.commons</groupId>
@@ -59,6 +59,20 @@
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>2.1.214</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>4.11.0</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <version>4.11.0</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
