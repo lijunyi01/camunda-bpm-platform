@@ -74,5 +74,10 @@ public class ExternalAccessSpringConfiguration {
         return new ApiService();
     }
 
+    @Bean
+    public CacheManager cacheManager() {
+        return new CacheManager();
+    }
+
 
 }

@@ -20,7 +20,6 @@ import java.util.List;
  */
 public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityProvider, Session {
 
-    // @Autowired
     private ApiService apiService;
 
     private static final ExternalAccessPluginLogger LOG = ExternalAccessPluginLogger.LOGGER;
@@ -56,11 +55,9 @@ public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityPr
         List<User> externalUsers = new ArrayList<>();
         AllUsersQueryVO queryVO = new AllUsersQueryVO();
         queryVO.setTenantId("");
-        BpmnResponseVO<List<UserVO>> response = apiService.listExternalUserIds(queryVO);
-        if(response.getCode().equals(200)) {
-            for(UserVO userVO : response.getResult()) {
-                externalUsers.add(createUser(userVO.getUserId(), userVO.getFirstName(), userVO.getLastName(), userVO.getEmail()));
-            }
+        BpmnResponseVO<List<User>> response = apiService.listExternalUsers(queryVO);
+        if(response != null) {
+            externalUsers = response.getResult();
         }
         LOG.writeLog("ExternalAccessIdentityProviderSession getAllUsers:" + externalUsers);
         return externalUsers;

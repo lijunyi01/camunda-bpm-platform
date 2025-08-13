@@ -13,7 +13,9 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.camunda.bpm.identity.external.apiVO.UserVO;
 import org.springframework.core.ParameterizedTypeReference;
+import org.camunda.bpm.engine.identity.User;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,12 +34,29 @@ public class ApiService {
     
     @Autowired
     private ApiProperties apiProperties;
+
+    @Autowired
+    private CacheManager cacheManager;
     
     /**
      * 查询全量用户id列表
      * @return 用户id列表
      */
-    public BpmnResponseVO<List<UserVO>> listExternalUserIds(Object requestBody) {
+    public BpmnResponseVO<List<User>> listExternalUsers(Object requestBody) {
+        BpmnResponseVO<List<UserVO>> cachedResponse = cacheManager.getUserCache("externalUsers");
+        if(cachedResponse != null) {
+            LOG.writeLog("ExternalAccessIdentityProviderSession getAllUsers from cache");
+            // 转换缓存的UserVO为User对象
+            List<User> externalUsers = new ArrayList<>();
+            for(UserVO userVO : cachedResponse.getResult()) {
+                externalUsers.add(createUser(userVO.getUserId(), userVO.getFirstName(), userVO.getLastName(), userVO.getEmail()));
+            }
+            BpmnResponseVO<List<User>> response = new BpmnResponseVO<>();
+            response.setCode(200);
+            response.setMsg("success");
+            response.setResult(externalUsers);
+            return response;
+        }
         try {
             String url = UriComponentsBuilder
                     .fromHttpUrl(apiProperties.getBaseUrl())
@@ -52,11 +71,26 @@ public class ApiService {
             // 以下无法正常为带范型的类反序列化
             // final ResponseEntity<BpmnResponseVO> response = restTemplate.postForEntity(url, requestBody, BpmnResponseVO.class);
             
-            if (response.getStatusCode().is2xxSuccessful()) {
-                return response.getBody();
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null && response.getBody().getCode().equals(200)) {
+                List<User> externalUsers = new ArrayList<>();
+                for(UserVO userVO : response.getBody().getResult()) {
+                    externalUsers.add(createUser(userVO.getUserId(), userVO.getFirstName(), userVO.getLastName(), userVO.getEmail()));
+                }
+                if(!externalUsers.isEmpty()) {
+                    cacheManager.putUserCache("externalUsers", response.getBody());
+                }
+                BpmnResponseVO<List<User>> successResponse = new BpmnResponseVO<>();
+                successResponse.setCode(200);
+                successResponse.setMsg("success");
+                successResponse.setResult(externalUsers);
+                return successResponse;
             } else {
                 LOG.writeLog("External API(idlist) returned non-success status: " + response.getStatusCode());
-                return null;
+                BpmnResponseVO<List<User>> errorResponse = new BpmnResponseVO<>();
+                errorResponse.setCode(500);
+                errorResponse.setMsg("error");
+                errorResponse.setResult(new ArrayList<>());
+                return errorResponse;
             }
             
         } catch (RestClientException e) {
@@ -274,5 +308,15 @@ public class ApiService {
             LOG.writeLog("Error calling external API POST: error:" + e.getMessage());
             return null;
         }
+    }
+
+    // 辅助方法：创建用户
+    private static User createUser(String id, String firstName, String lastName, String email) {
+        User user = new UserEntity();
+        user.setId(id);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setEmail(email);
+        return user;
     }
 }
