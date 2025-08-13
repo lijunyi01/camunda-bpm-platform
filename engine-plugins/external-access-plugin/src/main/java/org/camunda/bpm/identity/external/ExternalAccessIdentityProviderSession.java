@@ -20,7 +20,7 @@ import java.util.List;
  */
 public class ExternalAccessIdentityProviderSession implements ReadOnlyIdentityProvider, Session {
 
-    @Autowired
+    // @Autowired
     private ApiService apiService;
 
     private static final ExternalAccessPluginLogger LOG = ExternalAccessPluginLogger.LOGGER;
