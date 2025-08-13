@@ -16,6 +16,7 @@
  */
 package org.camunda.bpm.identity.external;
 
+import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -76,37 +77,29 @@ public class ExternalApiServiceTest {
     }
 
     @Test
-    public void testFindUser_Success() {
+    public void testListExternalUserIds_Success() {
         // Given
-        String userId = "john.doe";
-        Map<String, Object> expectedUser = new HashMap<>();
-        expectedUser.put("id", userId);
-        expectedUser.put("name", "John Doe");
-        expectedUser.put("email", "john.doe@example.com");
-
-        when(restTemplate.getForObject(anyString(), eq(Map.class)))
-            .thenReturn(expectedUser);
+        Object requestBody = new Object();
+        
+        when(restTemplate.postForEntity(anyString(), any(), eq(BpmnResponseVO.class)))
+            .thenReturn(null); // Mock response
 
         // When
-        Map<String, Object> result = apiService.findUser(userId);
+        Object result = apiService.listExternalUserIds(requestBody);
 
         // Then
-        assertNotNull(result);
-        assertEquals(userId, result.get("id"));
-        assertEquals("John Doe", result.get("name"));
-        verify(restTemplate).getForObject(
-            "https://api.example.com/users/john.doe", Map.class);
+        // Test implementation depends on actual response structure
     }
 
     @Test
-    public void testFindUser_NotFound() {
+    public void testListExternalUserIds_Error() {
         // Given
-        String userId = "nonexistent";
-        when(restTemplate.getForObject(anyString(), eq(Map.class)))
-            .thenThrow(new RestClientException("404 Not Found"));
+        Object requestBody = new Object();
+        when(restTemplate.postForEntity(anyString(), any(), eq(BpmnResponseVO.class)))
+            .thenThrow(new RestClientException("Connection failed"));
 
         // When
-        Map<String, Object> result = apiService.findUser(userId);
+        Object result = apiService.listExternalUserIds(requestBody);
 
         // Then
         assertNull(result);

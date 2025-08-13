@@ -4,10 +4,8 @@ import org.camunda.bpm.engine.identity.User;
 import org.camunda.bpm.engine.identity.UserQuery;
 import org.camunda.bpm.engine.impl.Page;
 
+import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
-import java.util.Map;
-import java.util.HashMap;
 import java.util.stream.Collectors;
 
 /**
@@ -18,27 +16,19 @@ public class ExternalUserQuery implements UserQuery {
     private static final ExternalAccessPluginLogger LOG = ExternalAccessPluginLogger.LOGGER;
 
     private final List<User> users;
-    private final ExternalAccessIdentityProviderSession session;
     private String userId;
+    private List<String> userIds;
     private String firstName;
     private String lastName;
     private String email;
     private String groupId;
-    private Map<String, Object> processContext = new HashMap<>();
+    // private Map<String, Object> processContext = new HashMap<>();
 
-    public ExternalUserQuery(List<User> users, ExternalAccessIdentityProviderSession session) {
+    // public ExternalUserQuery() {
+    // }
+
+    public ExternalUserQuery(List<User> users) {
         this.users = users;
-        this.session = session;
-    }
-    
-    /**
-     * 设置流程上下文信息
-     * @param processContext 流程上下文信息
-     */
-    public void setProcessContext(Map<String, Object> processContext) {
-        if (processContext != null) {
-            this.processContext = processContext;
-        }
     }
 
     @Override
@@ -100,6 +90,7 @@ public class ExternalUserQuery implements UserQuery {
     @Override
     public UserQuery userIdIn(String... ids) {
         LOG.writeLog("ExternalUserQuery userIdIn:" + String.join(",", ids));
+        this.userIds = Arrays.asList(ids);
         return this;
     }
 
@@ -169,6 +160,7 @@ public class ExternalUserQuery implements UserQuery {
         LOG.writeLog("ExternalUserQuery list");
         return users.stream()
             .filter(user -> userId == null || user.getId().equals(userId))
+            .filter(user -> userIds == null || userIds.contains(user.getId()))
             .filter(user -> firstName == null || user.getFirstName().contains(firstName))
             .filter(user -> lastName == null || user.getLastName().contains(lastName))
             .filter(user -> email == null || user.getEmail().contains(email))
@@ -177,17 +169,17 @@ public class ExternalUserQuery implements UserQuery {
     }
 
     private boolean isUserMemberOfGroup(String userId, String groupId) {
-        if (session != null) {
+        //if (session != null) {
             // 如果有流程上下文信息，使用带上下文的方法
-            if (processContext != null && !processContext.isEmpty()) {
-                Set<String> userIds = session.findUserIdsByGroupId(groupId, processContext);
-                return userIds != null && userIds.contains(userId);
-            } else {
-                // 否则使用默认方法
-                Set<String> userIds = session.findUserIdsByGroupId(groupId);
-                return userIds != null && userIds.contains(userId);
-            }
-        }
+            // if (processContext != null && !processContext.isEmpty()) {
+            //     Set<String> userIds = session.findUserIdsByGroupId(groupId, processContext);
+            //     return userIds != null && userIds.contains(userId);
+            // } else {
+            //     // 否则使用默认方法
+            //     Set<String> userIds = session.findUserIdsByGroupId(groupId);
+            //     return userIds != null && userIds.contains(userId);
+            // }
+        //}
         return false;
     }
 

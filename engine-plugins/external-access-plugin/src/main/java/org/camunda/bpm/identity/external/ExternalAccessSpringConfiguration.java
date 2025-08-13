@@ -41,20 +41,15 @@ import java.time.Duration;
 public class ExternalAccessSpringConfiguration {
 
     @Bean(name = "apiRestTemplate")
-    public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        RestTemplate restTemplate = builder
-                .setConnectTimeout(Duration.ofMillis(5000))
-                .setReadTimeout(Duration.ofMillis(50000))
-                .build();
-        
-        // // 添加认证拦截器
-        // List<ClientHttpRequestInterceptor> interceptors = new ArrayList<>();
-        // if (apiProperties.getAuthToken() != null && !apiProperties.getAuthToken().isEmpty()) {
-        //     interceptors.add(new AuthTokenInterceptor(apiProperties.getAuthToken()));
-        // }
-        // restTemplate.setInterceptors(interceptors);
-        
-        return restTemplate;
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
+    }
+    
+    @Bean
+    public RestTemplateBuilder restTemplateBuilder() {
+        return new RestTemplateBuilder()
+            .setConnectTimeout(Duration.ofSeconds(30))
+            .setReadTimeout(Duration.ofSeconds(30));
     }
 
     @Bean
@@ -95,6 +90,9 @@ public class ExternalAccessSpringConfiguration {
 
         @Autowired
         private ExternalUserQueryService externalUserQuery;
+        
+        @Autowired
+        private ApiService apiService;
 
         public void preInit(ProcessEngineConfigurationImpl processEngineConfiguration) {
             // Register the ExternalUserQueryService bean in the process engine configuration
@@ -107,7 +105,7 @@ public class ExternalAccessSpringConfiguration {
             
             // Set the identity provider session factory
             processEngineConfiguration.setIdentityProviderSessionFactory(
-                new ExternalAccessIdentityProviderSessionFactory());
+                new ExternalAccessIdentityProviderSessionFactory(apiService));
         }
 
         public void postProcessEngineBuild(ProcessEngine processEngine) {
@@ -143,6 +141,12 @@ public class ExternalAccessSpringConfiguration {
          * Identity Provider Session Factory for External Access
          */
         public static class ExternalAccessIdentityProviderSessionFactory implements SessionFactory {
+            
+            private final ApiService apiService;
+            
+            public ExternalAccessIdentityProviderSessionFactory(ApiService apiService) {
+                this.apiService = apiService;
+            }
 
             @Override
             public Class<?> getSessionType() {
@@ -151,7 +155,10 @@ public class ExternalAccessSpringConfiguration {
 
             @Override
             public Session openSession() {
-                return new ExternalAccessIdentityProviderSession();
+                ExternalAccessIdentityProviderSession session = new ExternalAccessIdentityProviderSession();
+                // 手动注入ApiService依赖
+                session.setApiService(apiService);
+                return session;
             }
         }
     }

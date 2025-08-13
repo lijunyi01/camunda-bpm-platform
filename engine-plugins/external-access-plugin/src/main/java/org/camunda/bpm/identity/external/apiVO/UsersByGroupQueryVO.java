@@ -10,6 +10,8 @@ public class UsersByGroupQueryVO {
     private String processInstanceId;
     // 流程实例任务节点id
     private String taskId;
+    // tenantId
+    private String tenantId;
 
     @Override
     public String toString() {
@@ -19,7 +21,16 @@ public class UsersByGroupQueryVO {
                 ", processDefinitionId='" + processDefinitionId + '\'' +
                 ", processInstanceId='" + processInstanceId + '\'' +
                 ", taskId='" + taskId + '\'' +
+                ", tenantId='" + tenantId + '\'' +
                 '}';
+    }
+
+    public String getTenantId() {
+        return tenantId;
+    }
+
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
     public String getTaskId() {

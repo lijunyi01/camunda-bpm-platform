@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.camunda.bpm.identity.external.apiVO.UserVO;
+import org.springframework.core.ParameterizedTypeReference;
 
 import java.util.List;
 import java.util.Map;
@@ -32,32 +34,33 @@ public class ApiService {
     private ApiProperties apiProperties;
     
     /**
-     * 查询用户信息
-     * 
-     * @param userId 用户ID
-     * @return 用户信息
+     * 查询全量用户id列表
+     * @return 用户id列表
      */
-    public Map<String, Object> findUser(String userId) {
+    public BpmnResponseVO<List<UserVO>> listExternalUserIds(Object requestBody) {
         try {
             String url = UriComponentsBuilder
                     .fromHttpUrl(apiProperties.getBaseUrl())
-                    .path(apiProperties.getUserQueryPath())
-                    .path("/" + userId)
+                    .path("/person/idlist")
                     .toUriString();
             
-            LOG.writeLog("Calling external API to find user: " + userId);
+            LOG.writeLog("Calling external API(idlist) to find users");
             
-            ResponseEntity<Map> response = restTemplate.getForEntity(url, Map.class);
+            ParameterizedTypeReference<BpmnResponseVO<List<UserVO>>> typeRef = new ParameterizedTypeReference<BpmnResponseVO<List<UserVO>>>() {};
+            HttpEntity<Object> requestEntity = new HttpEntity<>(requestBody);
+            final ResponseEntity<BpmnResponseVO<List<UserVO>>> response = restTemplate.exchange(url, HttpMethod.POST, requestEntity, typeRef);
+            // 以下无法正常为带范型的类反序列化
+            // final ResponseEntity<BpmnResponseVO> response = restTemplate.postForEntity(url, requestBody, BpmnResponseVO.class);
             
             if (response.getStatusCode().is2xxSuccessful()) {
                 return response.getBody();
             } else {
-                LOG.writeLog("External API returned non-success status: " + response.getStatusCode());
+                LOG.writeLog("External API(idlist) returned non-success status: " + response.getStatusCode());
                 return null;
             }
             
         } catch (RestClientException e) {
-            LOG.writeLog("Error calling external API to find user: " + userId + ", error: " + e.getMessage());
+            LOG.writeLog("Error calling external API(idlist): , error: " + e.getMessage());
             return null;
         }
     }
@@ -240,22 +243,20 @@ public class ApiService {
 
     /**
      * 从候选组获取对应的人员
-     *
-     * @param path API路径
      * @param requestBody 请求体
      * @return 响应结果
      */
-    public BpmnResponseVO<List<String>> getUsersByGroupId(String path, Object requestBody) {
+    public BpmnResponseVO<List<String>> getUsersByGroupId(Object requestBody) {
         LOG.writeLog("post base url:" + apiProperties.getBaseUrl());
         try {
             String url = UriComponentsBuilder
                     .fromHttpUrl(apiProperties.getBaseUrl())
-                    .path(path)
+                    .path("/person/getPersonByOrgId")
                     .toUriString();
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.set("Content-Type", "application/json");
-            HttpEntity<Object> entity = new HttpEntity<>(requestBody, headers);
+            // HttpHeaders headers = new HttpHeaders();
+            // headers.set("Content-Type", "application/json");
+            // HttpEntity<Object> entity = new HttpEntity<>(requestBody, headers);
 
             LOG.writeLog("Calling external API POST: " + url);
 
@@ -270,7 +271,7 @@ public class ApiService {
             }
 
         } catch (RestClientException e) {
-            LOG.writeLog("Error calling external API POST: " + path + "error:" + e.getMessage());
+            LOG.writeLog("Error calling external API POST: error:" + e.getMessage());
             return null;
         }
     }

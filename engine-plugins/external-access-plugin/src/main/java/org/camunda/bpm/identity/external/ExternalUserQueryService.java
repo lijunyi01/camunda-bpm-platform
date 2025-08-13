@@ -48,7 +48,7 @@ public class ExternalUserQueryService {
 
         // 调用外部接口，获取groupName对应的人员
         // Object response = apiService.callPostApi("/person/getPersonByOrgId", queryVO);
-        BpmnResponseVO<List<String>> response = apiService.getUsersByGroupId("/person/getPersonByOrgId", queryVO);
+        BpmnResponseVO<List<String>> response = apiService.getUsersByGroupId(queryVO);
         LOG.writeLog("bpmn-service call result:" + response.toString());
 
         List<String> users = new ArrayList<>();
