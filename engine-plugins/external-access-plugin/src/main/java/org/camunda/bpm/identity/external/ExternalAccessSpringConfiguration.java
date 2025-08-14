@@ -16,6 +16,10 @@
  */
 package org.camunda.bpm.identity.external;
 
+import org.camunda.bpm.identity.external.listener.TestExecutionListener;
+import org.camunda.bpm.identity.external.listener.TestTaskListener;
+import org.camunda.bpm.identity.external.util.BeanChecker;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -84,5 +88,20 @@ public class ExternalAccessSpringConfiguration {
             .maximumSize(10000)
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
+    }
+
+    @Bean(name = "testTaskListener")
+    public TestTaskListener getTestTaskListener() {
+        return new TestTaskListener();
+    }
+
+    @Bean(name = "testExecutionListener")
+    public TestExecutionListener getTestExecutionListener() {
+        return new TestExecutionListener();
+    }
+
+    @Bean
+    public BeanChecker getBeanChecker(ApplicationContext applicationContext) {
+        return new BeanChecker(applicationContext);
     }
 }

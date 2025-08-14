@@ -1,4 +1,4 @@
-package org.camunda.bpm.identity.external.taskListener;
+package org.camunda.bpm.identity.external.listener;
 
 import org.camunda.bpm.engine.delegate.TaskListener;
 import org.camunda.bpm.engine.delegate.DelegateTask;

@@ -2,6 +2,7 @@ package org.camunda.bpm.identity.external.apiManager;
 
 import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
 import org.camunda.bpm.identity.external.entity.UserEntity;
+import org.camunda.bpm.identity.external.util.BeanChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
@@ -39,12 +40,18 @@ public class ApiService {
 
     @Autowired
     private Cache<String, Object> myCache;
+
+    @Autowired
+    private BeanChecker beanChecker;
     
     /**
      * 查询全量用户id列表
      * @return 用户id列表
      */
     public BpmnResponseVO<List<User>> listExternalUsers(Object requestBody) {
+        // 检查bean,调试用
+        // beanChecker.checkBeans();
+
         List<User> cachedUsers = (List<User>) myCache.getIfPresent("externalUsers");
         if(cachedUsers != null) {
             LOG.writeLog("ExternalAccessIdentityProviderSession getAllUsers from cache");
