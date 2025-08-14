@@ -1,4 +1,4 @@
-package org.camunda.bpm.identity.external;
+package org.camunda.bpm.identity.external.entity;
 
 import org.camunda.bpm.engine.identity.User;
 

@@ -20,8 +20,8 @@ public class ExternalAccessPlugin extends AbstractProcessEnginePlugin {
     @Autowired
     private ExternalUserQueryService externalUserQuery;
     
-    @Autowired
-    private ApiService apiService;
+//    @Autowired
+//    private ApiService apiService;
     
     @Autowired
     private ExternalAccessIdentityProviderSessionFactory sessionFactory;

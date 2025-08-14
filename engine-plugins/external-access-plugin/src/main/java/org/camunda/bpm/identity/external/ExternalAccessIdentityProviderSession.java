@@ -6,8 +6,11 @@ import org.camunda.bpm.engine.impl.interceptor.Session;
 import org.camunda.bpm.engine.impl.interceptor.CommandContext;
 import org.camunda.bpm.identity.external.apiVO.AllUsersQueryVO;
 import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
-import org.camunda.bpm.identity.external.apiVO.UserVO;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.camunda.bpm.identity.external.apiManager.ApiService;
+import org.camunda.bpm.identity.external.entity.GroupEntity;
+import org.camunda.bpm.identity.external.entity.UserEntity;
+//import org.camunda.bpm.identity.external.apiVO.UserVO;
+//import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,7 +1,7 @@
-package org.camunda.bpm.identity.external;
+package org.camunda.bpm.identity.external.apiManager;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 
 /**
  * 外部API配置属性

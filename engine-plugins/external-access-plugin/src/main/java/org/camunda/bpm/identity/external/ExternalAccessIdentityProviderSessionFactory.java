@@ -3,7 +3,9 @@ package org.camunda.bpm.identity.external;
 import org.camunda.bpm.engine.impl.interceptor.Session;
 import org.camunda.bpm.engine.impl.interceptor.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.camunda.bpm.identity.external.apiManager.ApiService;
+
+//import org.springframework.stereotype.Component;
 
 /**
  * Identity Provider Session Factory for External Access

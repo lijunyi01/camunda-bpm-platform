@@ -7,6 +7,7 @@ import org.camunda.bpm.engine.delegate.DelegateExecution;
 import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
 import org.camunda.bpm.identity.external.apiVO.UsersByGroupQueryVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.camunda.bpm.identity.external.apiManager.ApiService;
 
 /**
  * 外部用户查询服务

@@ -16,13 +16,17 @@
  */
 package org.camunda.bpm.identity.external;
 
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 
 import java.time.Duration;
+import java.util.concurrent.TimeUnit;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import org.camunda.bpm.identity.external.apiManager.ApiService;
+import org.camunda.bpm.identity.external.apiManager.ApiProperties;
 
 /**
  * Spring configuration for External Access Identity Provider Plugin.
@@ -75,9 +79,10 @@ public class ExternalAccessSpringConfiguration {
     }
 
     @Bean
-    public CacheManager cacheManager() {
-        return new CacheManager();
+    public Cache<String, Object> caffeineCache() {
+        return Caffeine.newBuilder()
+            .maximumSize(10000)
+            .expireAfterWrite(10, TimeUnit.MINUTES)
+            .build();
     }
-
-
 }

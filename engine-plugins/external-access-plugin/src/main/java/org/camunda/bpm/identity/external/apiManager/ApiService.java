@@ -1,23 +1,25 @@
-package org.camunda.bpm.identity.external;
+package org.camunda.bpm.identity.external.apiManager;
 
 import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
+import org.camunda.bpm.identity.external.entity.UserEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import org.camunda.bpm.identity.external.apiVO.UserVO;
 import org.springframework.core.ParameterizedTypeReference;
 import org.camunda.bpm.engine.identity.User;
+import org.camunda.bpm.identity.external.ExternalAccessPluginLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import com.github.benmanes.caffeine.cache.Cache;
 
 /**
  * 外部API服务类
@@ -36,25 +38,20 @@ public class ApiService {
     private ApiProperties apiProperties;
 
     @Autowired
-    private CacheManager cacheManager;
+    private Cache<String, Object> myCache;
     
     /**
      * 查询全量用户id列表
      * @return 用户id列表
      */
     public BpmnResponseVO<List<User>> listExternalUsers(Object requestBody) {
-        BpmnResponseVO<List<UserVO>> cachedResponse = cacheManager.getUserCache("externalUsers");
-        if(cachedResponse != null) {
+        List<User> cachedUsers = (List<User>) myCache.getIfPresent("externalUsers");
+        if(cachedUsers != null) {
             LOG.writeLog("ExternalAccessIdentityProviderSession getAllUsers from cache");
-            // 转换缓存的UserVO为User对象
-            List<User> externalUsers = new ArrayList<>();
-            for(UserVO userVO : cachedResponse.getResult()) {
-                externalUsers.add(createUser(userVO.getUserId(), userVO.getFirstName(), userVO.getLastName(), userVO.getEmail()));
-            }
             BpmnResponseVO<List<User>> response = new BpmnResponseVO<>();
             response.setCode(200);
             response.setMsg("success");
-            response.setResult(externalUsers);
+            response.setResult(cachedUsers);
             return response;
         }
         try {
@@ -77,7 +74,8 @@ public class ApiService {
                     externalUsers.add(createUser(userVO.getUserId(), userVO.getFirstName(), userVO.getLastName(), userVO.getEmail()));
                 }
                 if(!externalUsers.isEmpty()) {
-                    cacheManager.putUserCache("externalUsers", response.getBody());
+                    myCache.put("externalUsers", externalUsers);
+                    LOG.writeLog("ExternalAccessIdentityProviderSession getAllUsers put cache");
                 }
                 BpmnResponseVO<List<User>> successResponse = new BpmnResponseVO<>();
                 successResponse.setCode(200);
