@@ -245,7 +245,6 @@ public class ApiService {
     
     /**
      * 通用POST请求方法
-     * 
      * @param path API路径
      * @param requestBody 请求体
      * @return 响应结果
@@ -253,8 +252,7 @@ public class ApiService {
     public Object callPostApi(String path, Object requestBody) {
         LOG.writeLog("post base url:" + apiProperties.getBaseUrl());
         try {
-            String url = UriComponentsBuilder
-                    .fromHttpUrl(apiProperties.getBaseUrl())
+            String url = UriComponentsBuilder.fromUriString(apiProperties.getBaseUrl())
                     .path(path)
                     .toUriString();
             
@@ -285,12 +283,12 @@ public class ApiService {
      * @param requestBody 请求体
      * @return 响应结果
      */
-    public BpmnResponseVO<List<String>> getUsersByGroupId(Object requestBody) {
+    public BpmnResponseVO<List<String>> getUsersByParams(Object requestBody) {
         LOG.writeLog("post base url:" + apiProperties.getBaseUrl());
         try {
             String url = UriComponentsBuilder
                     .fromHttpUrl(apiProperties.getBaseUrl())
-                    .path("/person/getPersonByOrgId")
+                    .path("/person/getPersonByParams")
                     .toUriString();
 
             // HttpHeaders headers = new HttpHeaders();

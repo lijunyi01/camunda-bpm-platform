@@ -1,7 +1,7 @@
 package org.camunda.bpm.identity.external.apiVO;
 
-public class UsersByGroupQueryVO {
-    private String groupName;
+public class UsersByParamsQueryVO {
+    private String paramString;
     // 发起人员id
     private String startPeopleId;
     // 流程定义id
@@ -15,14 +15,22 @@ public class UsersByGroupQueryVO {
 
     @Override
     public String toString() {
-        return "UsersByGroupQueryVO{" +
-                "groupName='" + groupName + '\'' +
+        return "UsersByParamsQueryVO{" +
+                "paramString='" + paramString + '\'' +
                 ", startPeopleId='" + startPeopleId + '\'' +
                 ", processDefinitionId='" + processDefinitionId + '\'' +
                 ", processInstanceId='" + processInstanceId + '\'' +
                 ", taskId='" + taskId + '\'' +
                 ", tenantId='" + tenantId + '\'' +
                 '}';
+    }
+
+    public String getParamString() {
+        return paramString;
+    }
+
+    public void setParamString(String paramString) {
+        this.paramString = paramString;
     }
 
     public String getTenantId() {
@@ -65,11 +73,5 @@ public class UsersByGroupQueryVO {
         this.startPeopleId = startPeopleId;
     }
 
-    public String getGroupName() {
-        return groupName;
-    }
 
-    public void setGroupName(String groupName) {
-        this.groupName = groupName;
-    }
 }
