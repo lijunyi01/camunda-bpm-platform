@@ -32,7 +32,7 @@ public class TestExecutionListener implements ExecutionListener {
         String starterId = (String) delegateExecution.getVariable("startPeopleId");
 
         LOG.writeLog("TestExecutionListener executed,starterId:" + starterId + ",processInstanceId:" + processInstanceId
-        + ",processDefinitionId:" + processDefinitionId + ",currentActivityId:" + currentActivityId);
+                + ",processDefinitionId:" + processDefinitionId + ",currentActivityId:" + currentActivityId);
 
         // 获取流程模型的扩展属性（暂时没什么实际应用）
         Map<String, String> modelExtProperties = getModelExtensionProperties(delegateExecution);
@@ -47,65 +47,62 @@ public class TestExecutionListener implements ExecutionListener {
         // 从开始事件节点开始，递归查找所有后续的用户任务
         findFollowingUserTasks(startEvent, followingUserTasks, visitedNodes);
         LOG.writeLog("Found following user tasks: " + followingUserTasks.size());
-        if(followingUserTasks.isEmpty()) {
+        if (followingUserTasks.isEmpty()) {
             LOG.writeLog("No user tasks found after the start event.");
             return;
         }
-        for(UserTask userTask : followingUserTasks) {
+        for (UserTask userTask : followingUserTasks) {
             LOG.writeLog("User Task ID: " + userTask.getId() + ", Name: " + userTask.getName());
             // 获取该任务的循环特性 (LoopCharacteristics)
             final LoopCharacteristics loopCharacteristics = userTask.getLoopCharacteristics();
             // 判断是否存在循环特性且其类型为多实例 (MultiInstanceLoopCharacteristics)
             if (loopCharacteristics instanceof MultiInstanceLoopCharacteristics) {
                 // 将其转换为 MultiInstanceLoopCharacteristics 类型
-                MultiInstanceLoopCharacteristics multiInstance = (MultiInstanceLoopCharacteristics) loopCharacteristics;
-                // 调用 isSequential() 方法进行最终判断
-                if (multiInstance.isSequential()) {
-                    LOG.writeLog("这是一个【串行】多实例审批节点。");
-                    // 获取查询审批人相关的扩展属性
-                    Map<String, String> extensionProperties = getExtensionProperties(userTask);
-                    LOG.writeLog("extensionProperties:" + extensionProperties.toString());
-                    // 从扩展属性中获取特定的属性（人员查询相关的）
-                    String myKey = null;
-                    String myValue = null;
-                    for(String key: extensionProperties.keySet()) {
-                        if(key.startsWith("approverList")) {
-                            myKey = key;
-                            break;
-                        }
+                // MultiInstanceLoopCharacteristics multiInstance = (MultiInstanceLoopCharacteristics) loopCharacteristics;
+                // 调用 isSequential() 方法进行最终判断 (无需判断并行、串行，用一样的逻辑处理)
+//                if (multiInstance.isSequential()) {
+                LOG.writeLog("这是一个多实例审批节点");
+                // 获取查询审批人相关的扩展属性
+                Map<String, String> extensionProperties = getExtensionProperties(userTask);
+                LOG.writeLog("extensionProperties:" + extensionProperties.toString());
+                // 从扩展属性中获取特定的属性（人员查询相关的）
+                String myKey = null;
+                String myValue = null;
+                for (String key : extensionProperties.keySet()) {
+                    if (key.startsWith("approverList")) {
+                        myKey = key;
+                        break;
                     }
-                    if(myKey != null) {
-                        myValue = extensionProperties.get(myKey);
-                    }
-                    UsersByParamsQueryVO queryVO = new UsersByParamsQueryVO();
-                    queryVO.setParamString(myValue);
-                    queryVO.setStartPeopleId(starterId);
-                    queryVO.setProcessInstanceId(processInstanceId);
-                    queryVO.setProcessDefinitionId(processDefinitionId);
-                    queryVO.setTaskId(currentActivityId);
-
-                    // 在这里编写获取审批人列表的逻辑
-                    BpmnResponseVO<List<String>> response = apiService.getUsersByParams(queryVO);
-                    List<String> approverList = new ArrayList<>();
-                    if (response.getCode().equals(200)) {
-                        approverList = response.getResult();
-                    }
-                    LOG.writeLog("myKey: " + myKey + ", myValue: " + myValue + " => approverList: " + approverList.toString());
-                    // 将列表作为流程变量存储
-                    delegateExecution.setVariable(myKey, approverList);
-                } else {
-                    LOG.writeLog("这是一个【并行】多实例审批节点。");
-                    // do nothing...
                 }
+                if (myKey != null) {
+                    myValue = extensionProperties.get(myKey);
+                }
+                UsersByParamsQueryVO queryVO = new UsersByParamsQueryVO();
+                queryVO.setParamString(myValue);
+                queryVO.setStartPeopleId(starterId);
+                queryVO.setProcessInstanceId(processInstanceId);
+                queryVO.setProcessDefinitionId(processDefinitionId);
+                queryVO.setTaskId(currentActivityId);
+
+                // 在这里编写获取审批人列表的逻辑
+                BpmnResponseVO<List<String>> response = apiService.getUsersByParams(queryVO);
+                List<String> approverList = new ArrayList<>();
+                if (response.getCode().equals(200)) {
+                    approverList = response.getResult();
+                }
+                LOG.writeLog("myKey: " + myKey + ", myValue: " + myValue + " => approverList: " + approverList.toString());
+                // 将列表作为流程变量存储
+                delegateExecution.setVariable(myKey, approverList);
             }
         }
     }
 
     /**
      * 递归方法，用于查找一个流程模型的所有用户任务节点
-     * @param currentNode      当前遍历到的节点
-     * @param foundUserTasks   用于存储找到的用户任务的列表
-     * @param visitedNodes     用于记录已访问的节点，防止死循环
+     *
+     * @param currentNode    当前遍历到的节点
+     * @param foundUserTasks 用于存储找到的用户任务的列表
+     * @param visitedNodes   用于记录已访问的节点，防止死循环
      */
     private void findFollowingUserTasks(FlowNode currentNode, List<UserTask> foundUserTasks, Set<FlowNode> visitedNodes) {
         // 如果当前节点已经访问过，则直接返回，避免无限循环
@@ -135,6 +132,7 @@ public class TestExecutionListener implements ExecutionListener {
 
     /**
      * 获取流程模型的某个用户任务节点的扩展属性
+     *
      * @param userTask 用户任务实例
      * @return 包含扩展属性的 Map
      */
@@ -161,6 +159,7 @@ public class TestExecutionListener implements ExecutionListener {
 
     /**
      * 获取流程模型的扩展属性
+     *
      * @param delegateExecution 委托执行实例
      * @return 包含扩展属性的 Map
      */
