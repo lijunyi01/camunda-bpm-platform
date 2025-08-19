@@ -6,7 +6,9 @@ import org.camunda.bpm.identity.external.ExternalAccessPluginLogger;
 import org.camunda.bpm.identity.external.apiManager.ApiService;
 import org.camunda.bpm.identity.external.apiVO.BpmnResponseVO;
 import org.camunda.bpm.identity.external.apiVO.UsersByParamsQueryVO;
+import org.camunda.bpm.model.bpmn.BpmnModelInstance;
 import org.camunda.bpm.model.bpmn.instance.*;
+import org.camunda.bpm.model.bpmn.instance.Process;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperties;
 import org.camunda.bpm.model.bpmn.instance.camunda.CamundaProperty;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,12 @@ public class TestExecutionListener implements ExecutionListener {
         LOG.writeLog("TestExecutionListener executed,starterId:" + starterId + ",processInstanceId:" + processInstanceId
         + ",processDefinitionId:" + processDefinitionId + ",currentActivityId:" + currentActivityId);
 
+        // 获取流程模型的扩展属性（暂时没什么实际应用）
+        Map<String, String> modelExtProperties = getModelExtensionProperties(delegateExecution);
+        LOG.writeLog("modelExtProperties:" + modelExtProperties.toString());
+
+
+        // 遍历用户任务，看哪个是串行多实例任务，对该类任务进行变量填充
         FlowNode startEvent = (FlowNode) delegateExecution.getBpmnModelElementInstance();
         List<UserTask> followingUserTasks = new ArrayList<>();
         Set<FlowNode> visitedNodes = new HashSet<>(); // 用于防止无限循环
@@ -94,7 +102,7 @@ public class TestExecutionListener implements ExecutionListener {
     }
 
     /**
-     * 递归方法，用于查找一个节点之后的所有用户任务
+     * 递归方法，用于查找一个流程模型的所有用户任务节点
      * @param currentNode      当前遍历到的节点
      * @param foundUserTasks   用于存储找到的用户任务的列表
      * @param visitedNodes     用于记录已访问的节点，防止死循环
@@ -126,7 +134,7 @@ public class TestExecutionListener implements ExecutionListener {
     }
 
     /**
-     * 获取用户任务的扩展属性
+     * 获取流程模型的某个用户任务节点的扩展属性
      * @param userTask 用户任务实例
      * @return 包含扩展属性的 Map
      */
@@ -149,5 +157,51 @@ public class TestExecutionListener implements ExecutionListener {
             }
         }
         return properties;
+    }
+
+    /**
+     * 获取流程模型的扩展属性
+     * @param delegateExecution 委托执行实例
+     * @return 包含扩展属性的 Map
+     */
+    private Map<String, String> getModelExtensionProperties(DelegateExecution delegateExecution) {
+        Map<String, String> extProperties = new HashMap<>();
+
+        // 从 DelegateExecution 获取整个 BPMN 模型实例
+        BpmnModelInstance modelInstance = delegateExecution.getBpmnModelInstance();
+
+        // 从模型实例中，通过类型查询到唯一的 Process 元素实例
+        // 对于一个有效的BPMN文件，Process 元素通常只有一个
+        Process process = modelInstance.getModelElementsByType(Process.class).iterator().next();
+
+        if (process == null) {
+            LOG.writeLog("在模型中找不到 <bpmn:process> 元素。");
+            return extProperties;
+        }
+
+        // 获取 Process 元素的扩展元素 (ExtensionElements)
+        ExtensionElements extensionElements = process.getExtensionElements();
+        if (extensionElements == null) {
+            LOG.writeLog("Process 元素上没有配置 <extensionElements>。");
+            return extProperties;
+        }
+
+        // 从扩展元素中查询 Camunda Properties
+        CamundaProperties camundaProperties = extensionElements.getElementsQuery()
+                .filterByType(CamundaProperties.class)
+                .singleResult();
+
+        if (camundaProperties != null) {
+            // 5. 遍历并获取每一个属性
+            Collection<CamundaProperty> properties = camundaProperties.getCamundaProperties();
+            for (CamundaProperty property : properties) {
+                String name = property.getCamundaName();
+                String value = property.getCamundaValue();
+                extProperties.put(name, value);
+            }
+        } else {
+            LOG.writeLog("Process 的 <extensionElements> 中没有配置 <camunda:properties>。");
+        }
+        return extProperties;
     }
 }
